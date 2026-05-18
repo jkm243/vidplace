@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Watermarker Studio</title>
+    <!-- Tailwind CSS pour un design moderne -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JSZip pour créer l'archive finale -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        .workspace-container {
+            aspect-ratio: 16 / 9;
+        }
+        /* Custom scrollbar pour look moderne */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                <i class="fa-solid font-bold fa-video-slash text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                Batch Watermarker <span class="text-xs font-semibold px-2 py-0.5 bg-slate-800 text-slate-400 rounded-full border border-slate-700 ml-2">Local v1.0</span>
+            </h1>
+        </div>
+        <div class="text-sm text-slate-400">
+            <i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Traitement 100% Client-Side
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="max-w-[1600px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-90px)]">
+        
+        <!-- PANNEAU GAUCHE : Configuration du Logo -->
+        <section class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-6 overflow-y-auto">
+            <div>
+                <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">1. Importer le Logo (PNG)</h2>
+                <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-4 cursor-pointer bg-slate-950/50 transition group">
+                    <i class="fa-solid fa-image text-2xl text-slate-500 group-hover:text-indigo-400 mb-2"></i>
+                    <span class="text-xs text-slate-400 group-hover:text-slate-200 text-center" id="logo-status">Choisir un PNG transparent</span>
+                    <input type="file" id="logo-input" accept="image/png" class="hidden">
+                </label>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <!-- Contrôles d'ajustement -->
+            <div class="flex flex-col gap-5 disabled-opacity" id="logo-controls">
+                <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">2. Ajuster le Filigrane</h2>
+                
+                <!-- Taille -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Échelle (Taille)</span>
+                        <span id="scale-val" class="text-indigo-400 font-mono">20%</span>
+                    </div>
+                    <input type="range" id="logo-scale" min="5" max="60" value="20" class="w-full accent-indigo-500 bg-slate-800 h-1 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- Opacité -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Opacité</span>
+                        <span id="opacity-val" class="text-indigo-400 font-mono">100%</span>
+                    </div>
+                    <input type="range" id="logo-opacity" min="10" max="100" value="100" class="w-full accent-indigo-500 bg-slate-800 h-1 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- Boutons d'ancrage rapide -->
+                <div>
+                    <span class="text-xs text-slate-400 block mb-2">Ancrage Rapide</span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setAnchor('top-left')" class="bg-slate-950 border border-slate-800 hover:border-slate-600 p-2 rounded text-xs transition">Haut-G</button>
+                        <button onclick="setAnchor('top-center')" class="bg-slate-950 border border-slate-800 hover:border-slate-600 p-2 rounded text-xs transition">Haut-C</button>
+                        <button onclick="setAnchor('top-right')" class="bg-slate-950 border border-slate-800 hover:border-slate-600 p-2 rounded text-xs transition">Haut-D</button>
+                        <button onclick="setAnchor('middle-center')" class="bg-slate-950 border border-slate-800 hover:border-slate-600 p-2 rounded text-xs transition">Centre</button>
+                        <button onclick="setAnchor('bottom-left')" class="bg-slate-950 border border-slate-800 hover:border-slate-600 p-2 rounded text-xs transition">Bas-G</button>
+                        <button onclick="setAnchor('bottom-right')" class="bg-slate-950 border border-slate-800 hover:border-slate-600 p-2 rounded text-xs transition">Bas-D</button>
+                    </div>
+                </div>
+
+                <button id="apply-all-btn" class="mt-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-clone"></i> Appliquer ce réglage à toutes les vidéos
+                </button>
+            </div>
+        </section>
+
+        <!-- PANNEAU CENTRAL : Espace de travail / Visualisation -->
+        <section class="lg:col-span-6 flex flex-col gap-4">
+            <div class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">
+                <!-- Topbar de la vidéo active -->
+                <div class="bg-slate-950/40 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center text-xs">
+                    <span class="text-slate-400 font-medium truncate" id="current-video-title">Aucune vidéo sélectionnée</span>
+                    <span class="text-slate-500 font-mono" id="video-resolution">-- x --</span>
+                </div>
+
+                <!-- Zone d'aperçu interactive -->
+                <div class="flex-1 flex items-center justify-center p-6 bg-slate-950/80 pattern-grid relative">
+                    
+                    <!-- État initial : Vide -->
+                    <div id="empty-state" class="text-center max-w-sm flex flex-col items-center z-10">
+                        <div class="w-16 h-16 rounded-full bg-indigo-600/10 border border-indigo-500/30 flex items-center justify-center mb-4 text-indigo-400 animate-pulse">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                        </div>
+                        <p class="text-sm font-medium mb-1">Glissez vos vidéos ou cliquez à droite</p>
+                        <p class="text-xs text-slate-500">Formats supportés : MP4, WebM. Traitement ultra-rapide en local.</p>
+                    </div>
+
+                    <!-- Conteneur d'édition (Masqué par défaut) -->
+                    <div id="workspace" class="workspace-container w-full max-w-2xl bg-black rounded-lg shadow-2xl relative overflow-hidden hidden select-none">
+                        <video id="preview-video" class="w-full h-full object-contain pointer-events-none" muted loop></video>
+                        <!-- Overlay de filigrane déplaçable -->
+                        <div id="watermark-overlay" class="absolute cursor-move border border-dashed border-transparent hover:border-indigo-400 transition-colors group" style="top: 10%; left: 10%; width: 20%;">
+                            <img id="watermark-img" src="" class="w-full h-full object-contain opacity-100 pointer-events-none">
+                            <!-- Indicateur visuel de drag -->
+                            <div class="absolute -top-2 -right-2 bg-indigo-500 text-[9px] px-1 rounded shadow opacity-0 group-hover:opacity-100 transition pointer-events-none">Ajuster</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contrôles du lecteur vidéo -->
+                <div class="bg-slate-950/40 border-t border-slate-800 px-4 py-3 flex items-center gap-4">
+                    <button id="play-btn" class="text-slate-400 hover:text-white transition text-sm"><i class="fa-solid fa-play"></i></button>
+                    <input type="range" id="video-timeline" min="0" max="100" value="0" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded cursor-pointer">
+                </div>
+            </div>
+        </section>
+
+        <!-- PANNEAU DROIT : Liste de traitement & Export -->
+        <section class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between overflow-y-auto">
+            <div class="flex flex-col gap-4 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">3. Fichiers Vidéos</h2>
+                    <label class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg cursor-pointer transition font-medium">
+                        <i class="fa-solid fa-plus mr-1"></i> Ajouter
+                        <input type="file" id="video-input" accept="video/mp4,video/webm" multiple class="hidden">
+                    </label>
+                </div>
+
+                <!-- Liste de fichiers chargée dynamiquement -->
+                <div id="file-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[200px]">
+                    <!-- Template vide inséré en JS si aucun fichier -->
+                </div>
+            </div>
+
+            <!-- Bouton d'exportation final -->
+            <div class="pt-4 border-t border-slate-800 mt-4">
+                <button id="export-btn" disabled class="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-box-archive"></i> Exporter l'archive (.ZIP)
+                </button>
+                
+                <!-- Overlay de progression d'exportation caché par défaut -->
+                <div id="progress-container" class="hidden mt-4 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400" id="progress-status">Encodage...</span>
+                        <span class="text-indigo-400 font-mono font-bold" id="progress-pct">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-cyan-500 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Éléments masqués indispensables pour le rendu d'export en tâche de fond -->
+    <canvas id="render-canvas" class="hidden"></canvas>
+
+    <!-- LOGIQUE DE L'APPLICATION (JAVASCRIPT) -->
+    <script>
+        // État global de l'application
+        let videoFiles = [];
+        let activeVideoIndex = null;
+        let logoSrc = null;
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+
+        // Éléments du DOM
+        const logoInput = document.getElementById('logo-input');
+        const logoStatus = document.getElementById('logo-status');
+        const logoScale = document.getElementById('logo-scale');
+        const logoOpacity = document.getElementById('logo-opacity');
+        const scaleVal = document.getElementById('scale-val');
+        const opacityVal = document.getElementById('opacity-val');
+        const videoInput = document.getElementById('video-input');
+        const fileList = document.getElementById('file-list');
+        const emptyState = document.getElementById('empty-state');
+        const workspace = document.getElementById('workspace');
+        const previewVideo = document.getElementById('preview-video');
+        const watermarkOverlay = document.getElementById('watermark-overlay');
+        const watermarkImg = document.getElementById('watermark-img');
+        const currentVideoTitle = document.getElementById('current-video-title');
+        const videoResolution = document.getElementById('video-resolution');
+        const playBtn = document.getElementById('play-btn');
+        const videoTimeline = document.getElementById('video-timeline');
+        const applyAllBtn = document.getElementById('apply-all-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const progressContainer = document.getElementById('progress-container');
+        const progressStatus = document.getElementById('progress-status');
+        const progressPct = document.getElementById('progress-pct');
+        const progressBar = document.getElementById('progress-bar');
+
+        // --- GESTION DU LOGO ---
+        logoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    logoSrc = event.target.result;
+                    watermarkImg.src = logoSrc;
+                    logoStatus.innerText = file.name;
+                    updateWatermarkVisuals();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function updateWatermarkVisuals() {
+            if (!logoSrc || activeVideoIndex === null) return;
+            const settings = videoFiles[activeVideoIndex].watermark;
+            watermarkOverlay.style.width = settings.scale + '%';
+            watermarkOverlay.style.opacity = settings.opacity / 100;
+            watermarkOverlay.style.left = settings.x + '%';
+            watermarkOverlay.style.top = settings.y + '%';
+        }
+
+        logoScale.addEventListener('input', (e) => {
+            scaleVal.innerText = e.target.value + '%';
+            if(activeVideoIndex !== null) {
+                videoFiles[activeVideoIndex].watermark.scale = parseInt(e.target.value);
+                updateWatermarkVisuals();
+            }
+        });
+
+        logoOpacity.addEventListener('input', (e) => {
+            opacityVal.innerText = e.target.value + '%';
+            if(activeVideoIndex !== null) {
+                videoFiles[activeVideoIndex].watermark.opacity = parseInt(e.target.value);
+                updateWatermarkVisuals();
+            }
+        });
+
+        // --- DRAG & DROP DU FILIGRANE ---
+        watermarkOverlay.addEventListener('mousedown', (e) => {
+            if (!logoSrc) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = watermarkOverlay.offsetLeft;
+            startTop = watermarkOverlay.offsetTop;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            const parentWidth = workspace.clientWidth;
+            const parentHeight = workspace.clientHeight;
+
+            let newLeft = ((startLeft + deltaX) / parentWidth) * 100;
+            let newTop = ((startTop + deltaY) / parentHeight) * 100;
+
+            // Limiter les mouvements aux bordures intérieures
+            newLeft = Math.max(0, Math.min(newLeft, 100 - videoFiles[activeVideoIndex].watermark.scale));
+            newTop = Math.max(0, Math.min(newTop, 100 - (watermarkOverlay.clientHeight / parentHeight * 100)));
+
+            videoFiles[activeVideoIndex].watermark.x = newLeft;
+            videoFiles[activeVideoIndex].watermark.y = newTop;
+
+            watermarkOverlay.style.left = newLeft + '%';
+            watermarkOverlay.style.top = newTop + '%';
+        });
+
+        document.addEventListener('mouseup', () => { isDragging = false; });
+
+        // Fonctions d'ancrage rapide
+        window.setAnchor = function(position) {
+            if(activeVideoIndex === null || !logoSrc) return;
+            const settings = videoFiles[activeVideoIndex].watermark;
+            const overlayAspect = watermarkOverlay.clientHeight / workspace.clientHeight * 100;
+            
+            switch(position) {
+                case 'top-left': settings.x = 4; settings.y = 4; break;
+                case 'top-center': settings.x = 50 - (settings.scale/2); settings.y = 4; break;
+                case 'top-right': settings.x = 96 - settings.scale; settings.y = 4; break;
+                case 'middle-center': settings.x = 50 - (settings.scale/2); settings.y = 50 - (overlayAspect/2); break;
+                case 'bottom-left': settings.x = 4; settings.y = 96 - overlayAspect; break;
+                case 'bottom-right': settings.x = 96 - settings.scale; settings.y = 96 - overlayAspect; break;
+            }
+            updateWatermarkVisuals();
+        }
+
+        applyAllBtn.addEventListener('click', () => {
+            if (activeVideoIndex === null) return;
+            const currentSettings = { ...videoFiles[activeVideoIndex].watermark };
+            videoFiles.forEach((vid, idx) => {
+                videoFiles[idx].watermark = { ...currentSettings };
+            });
+            alert('Réglages appliqués avec succès à toutes les vidéos.');
+        });
+
+
+        // --- GESTION DES VIDÉOS ---
+        videoInput.addEventListener('change', (e) => {
+            handleVideoFiles(e.target.files);
+        });
+
+        function handleVideoFiles(files) {
+            for (let file of files) {
+                const videoURL = URL.createObjectURL(file);
+                videoFiles.push({
+                    file: file,
+                    url: videoURL,
+                    watermark: { x: 5, y: 5, scale: 20, opacity: 100 } // Valeurs par défaut (en %)
+                });
+            }
+            renderFileList();
+            if (activeVideoIndex === null && videoFiles.length > 0) {
+                selectVideo(0);
+            }
+            checkExportStatus();
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            videoFiles.forEach((vid, index) => {
+                const isActive = index === activeVideoIndex;
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${isActive ? 'bg-indigo-600/10 border-indigo-500 text-white' : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400'}`;
+                item.onclick = () => selectVideo(index);
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden flex-1">
+                        <i class="fa-solid fa-file-video text-sm ${isActive ? 'text-indigo-400' : 'text-slate-500'} flex-shrink-0"></i>
+                        <span class="text-xs font-medium truncate">${vid.file.name}</span>
+                    </div>
+                    <button onclick="removeVideo(event, ${index})" class="text-slate-500 hover:text-red-400 p-1 text-xs transition ml-2">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                fileList.appendChild(item);
+            });
+        }
+
+        window.removeVideo = function(e, index) {
+            e.stopPropagation();
+            URL.revokeObjectURL(videoFiles[index].url);
+            videoFiles.splice(index, 1);
+            if (activeVideoIndex === index) activeVideoIndex = videoFiles.length > 0 ? 0 : null;
+            else if (activeVideoIndex > index) activeVideoIndex--;
+            
+            renderFileList();
+            if (activeVideoIndex !== null) selectVideo(activeVideoIndex);
+            else resetWorkspace();
+            checkExportStatus();
+        }
+
+        function selectVideo(index) {
+            activeVideoIndex = index;
+            const video = videoFiles[index];
+            
+            emptyState.classList.add('hidden');
+            workspace.classList.remove('hidden');
+            
+            previewVideo.src = video.url;
+            currentVideoTitle.innerText = video.file.name;
+            
+            // Forcer la mise à jour de l'interface par rapport aux données enregistrées de la vidéo
+            logoScale.value = video.watermark.scale;
+            scaleVal.innerText = video.watermark.scale + '%';
+            logoOpacity.value = video.watermark.opacity;
+            opacityVal.innerText = video.watermark.opacity + '%';
+
+            previewVideo.onloadedmetadata = () => {
+                videoResolution.innerText = `${previewVideo.videoWidth} x ${previewVideo.videoHeight}`;
+                updateWatermarkVisuals();
+            };
+
+            renderFileList();
+        }
+
+        function resetWorkspace() {
+            emptyState.classList.remove('hidden');
+            workspace.classList.add('hidden');
+            previewVideo.src = '';
+            currentVideoTitle.innerText = "Aucune vidéo sélectionnée";
+            videoResolution.innerText = "-- x --";
+        }
+
+        function checkExportStatus() {
+            exportBtn.disabled = videoFiles.length === 0 || !logoSrc;
+        }
+
+        // Contrôles basiques lecteur vidéo
+        playBtn.addEventListener('click', () => {
+            if (previewVideo.paused) {
+                previewVideo.play();
+                playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            } else {
+                previewVideo.pause();
+                playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            }
+        });
+
+        previewVideo.addEventListener('timeupdate', () => {
+            const pct = (previewVideo.currentTime / previewVideo.duration) * 100;
+            videoTimeline.value = pct || 0;
+        });
+
+        videoTimeline.addEventListener('input', (e) => {
+            const time = (e.target.value / 100) * previewVideo.duration;
+            previewVideo.currentTime = time;
+        });
+
+
+        // --- ENGINE MOTEUR : TRAITEMENT & EXPORTATION ZIP ---
+        exportBtn.addEventListener('click', async () => {
+            if (videoFiles.length === 0 || !logoSrc) return;
+
+            // UI Init
+            exportBtn.disabled = true;
+            progressContainer.classList.remove('hidden');
+            
+            const zip = new JSZip();
+            const imgMark = new Image();
+            imgMark.src = logoSrc;
+            
+            // Attendre chargement image complète
+            await new Promise(r => imgMark.onload = r);
+
+            // Boucler sur chaque vidéo
+            for(let i = 0; i < videoFiles.length; i++) {
+                const videoData = videoFiles[i];
+                progressStatus.innerText = `Traitement de : ${videoData.file.name} (${i+1}/${videoFiles.length})`;
+                
+                // Étape de rendu Canvas -> Capture de Flux vidéo
+                const blobVideoTraitee = await renderAndRecordVideo(videoData, imgMark, (progressNum) => {
+                    let globalPct = Math.round(((i / videoFiles.length) * 100) + (progressNum / videoFiles.length));
+                    progressPct.innerText = globalPct + '%';
+                    progressBar.style.width = globalPct + '%';
+                });
+
+                // Remplacer l'extension d'origine par .webm (standard natif d'enregistrement navigateur très performant)
+                const finalFileName = videoData.file.name.substring(0, videoData.file.name.lastIndexOf('.')) + "_watermarked.webm";
+                zip.file(finalFileName, blobVideoTraitee);
+            }
+
+            // Génération ZIP final
+            progressStatus.innerText = "Création du fichier ZIP...";
+            const zipContent = await zip.generateAsync({ type: "blob" });
+            
+            // Déclenchement automatique du téléchargement de l'archive
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(zipContent);
+            link.download = "videos_filigranes.zip";
+            link.click();
+
+            // Fin processus UI Reset
+            progressStatus.innerText = "Terminé !";
+            setTimeout(() => {
+                progressContainer.classList.add('hidden');
+                checkExportStatus();
+            }, 3000);
+        });
+
+        // Fonction maîtresse asynchrone générant une vidéo intégrant l'overlay
+        function renderAndRecordVideo(videoData, imgMark, onProgress) {
+            return new Promise((resolve) => {
+                const canvas = document.getElementById('render-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Vidéo invisible instanciée uniquement en mémoire vive dédiée à l'encodage séquentiel
+                const procVideo = document.createElement('video');
+                procVideo.src = videoData.url;
+                procVideo.muted = true;
+                procVideo.playsInline = true;
+
+                procVideo.onloadedmetadata = () => {
+                    canvas.width = procVideo.videoWidth;
+                    canvas.height = procVideo.videoHeight;
+                    
+                    // Capturer le flux du canvas à 30 images par seconde
+                    const stream = canvas.captureStream(30);
+                    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+                    const chunks = [];
+
+                    recorder.ondataavailable = e => chunks.push(e.data);
+                    recorder.onstop = () => {
+                        const completeBlob = new Blob(chunks, { type: 'video/webm' });
+                        resolve(completeBlob);
+                    };
+
+                    procVideo.play();
+                    recorder.start();
+
+                    // Boucle Frame par Frame synchronisée
+                    function drawFrame() {
+                        if (procVideo.paused || procVideo.ended) {
+                            recorder.stop();
+                            return;
+                        }
+
+                        // 1. Dessiner le flux vidéo source sous-jacent
+                        ctx.drawImage(procVideo, 0, 0, canvas.width, canvas.height);
+
+                        // 2. Calculer le ratio et les coordonnées exactes par rapport à l'échelle réelle de la vidéo
+                        const settings = videoData.watermark;
+                        const wWidth = (settings.scale / 100) * canvas.width;
+                        const imgRatio = imgMark.height / imgMark.width;
+                        const wHeight = wWidth * imgRatio;
+
+                        const wX = (settings.x / 100) * canvas.width;
+                        const wY = (settings.y / 100) * canvas.height;
+
+                        // 3. Injecter l'image du logo avec gestion de la transparence
+                        ctx.save();
+                        ctx.globalAlpha = settings.opacity / 100;
+                        ctx.drawImage(imgMark, wX, wY, wWidth, wHeight);
+                        ctx.restore();
+
+                        // Envoi de l'avancement global
+                        let progress = (procVideo.currentTime / procVideo.duration) * 100;
+                        onProgress(progress);
+
+                        requestAnimationFrame(drawFrame);
+                    }
+
+                    procVideo.addEventListener('play', drawFrame);
+                };
+            });
+        }
+
+        // Support du Drag and Drop global sur la fenêtre de l'application
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            const videos = Array.from(files).filter(f => f.type.startsWith('video/'));
+            if(videos.length > 0) handleVideoFiles(videos);
+        });
+    </script>
+</body>
+</html>
