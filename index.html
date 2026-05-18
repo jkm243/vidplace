@@ -34,13 +34,13 @@
                 <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                     Batch Watermarker Studio
                 </h1>
-                <p class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Édition Professionnelle</p>
+                <p class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Édition Professionnelle MP4</p>
             </div>
         </div>
         <div class="flex items-center gap-4 text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
-            <span class="text-slate-400"><i class="fa-solid fa-server text-red-400 mr-1.5"></i> Aucun serveur requis</span>
+            <span class="text-slate-400"><i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Rendu Local .MP4</span>
             <span class="text-slate-600">|</span>
-            <span class="text-slate-400"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1.5"></i> Confidentialité totale</span>
+            <span class="text-slate-400"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1.5"></i> Option Single/Zip</span>
         </div>
     </header>
 
@@ -109,7 +109,7 @@
                     <input type="range" id="logo-opacity" min="10" max="100" value="100" class="w-full accent-indigo-500 bg-slate-950 h-1 rounded-lg appearance-none cursor-pointer">
                 </div>
 
-                <!-- Ancrage Rapide (Désactivé si mode grille coché) -->
+                <!-- Ancrage Rapide -->
                 <div id="container-anchors">
                     <span class="text-[11px] text-slate-400 block mb-1.5">Ancrage Rapide Manuel</span>
                     <div class="grid grid-cols-3 gap-1.5 text-[10px]">
@@ -125,11 +125,11 @@
 
             <hr class="border-slate-800">
 
-            <!-- OPTIONS AVANCÉES NOUVELLES -->
+            <!-- OPTIONS AVANCÉES -->
             <div class="space-y-3">
                 <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. Options Avancées</h2>
                 
-                <!-- Mode Mosaïque / Protection Grille -->
+                <!-- Mode Mosaïque -->
                 <label class="flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
                     <div class="flex flex-col">
                         <span class="text-xs font-medium text-slate-200">Mode Grille (Mosaïque)</span>
@@ -149,12 +149,12 @@
 
                 <!-- Renommage groupé -->
                 <div>
-                    <label class="text-[11px] text-slate-400 font-medium block mb-1">Préfixe de renommage de l'archive</label>
+                    <label class="text-[11px] text-slate-400 font-medium block mb-1">Préfixe de renommage</label>
                     <input type="text" id="opt-rename" value="proteger_" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
                 </div>
             </div>
 
-            <!-- Systèmes de Configuration sauvegardés (Presets) -->
+            <!-- Configuration Presets -->
             <div class="mt-auto pt-2 grid grid-cols-2 gap-2">
                 <button onclick="savePreset()" class="bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 py-2 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-floppy-disk text-slate-400"></i> Sauver Preset
@@ -165,7 +165,7 @@
             </div>
         </section>
 
-        <!-- PANNEAU CENTRAL : Visualisation en direct -->
+        <!-- PANNEAU CENTRAL : Visualisation -->
         <section class="lg:col-span-8 xl:col-span-6 flex flex-col gap-4">
             <div class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative shadow-xl">
                 
@@ -186,29 +186,25 @@
                             <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
                         </div>
                         <p class="text-xs font-semibold text-slate-200 mb-1">Importez vos fichiers pour commencer</p>
-                        <p class="text-[11px] text-slate-500">Glissez-déposez n'importe où vos vidéos (MP4, WebM)</p>
+                        <p class="text-[11px] text-slate-500">Glissez-déposez vos vidéos (MP4, WebM)</p>
                     </div>
 
-                    <!-- Simulateur/Éditeur de scène -->
+                    <!-- Simulateur / Éditeur -->
                     <div id="workspace" class="workspace-container w-full max-w-3xl bg-black rounded-xl shadow-2xl relative overflow-hidden hidden select-none border border-slate-800">
                         <video id="preview-video" class="w-full h-full object-contain pointer-events-none" muted loop></video>
                         
-                        <!-- Le composant Filigrane UNIQUE déplaçable (Sauf si Grid activé) -->
+                        <!-- Calque déplaçable unique -->
                         <div id="watermark-overlay" class="absolute cursor-move border border-dashed border-indigo-500/40 hover:border-indigo-400 p-1 group" style="top: 10%; left: 10%; width: 20%;">
-                            <!-- Rendu image -->
                             <img id="watermark-img" src="" class="w-full h-full object-contain pointer-events-none hidden">
-                            <!-- Rendu Texte -->
                             <span id="watermark-text-render" class="w-full block whitespace-nowrap font-bold pointer-events-none select-none tracking-wide"></span>
                         </div>
 
-                        <!-- Visualisation Grille Virtuelle Indépendante (Active uniquement si option cochée) -->
-                        <div id="visual-grid-overlay" class="absolute inset-0 grid grid-cols-4 grid-rows-4 pointer-events-none p-4 gap-4 hidden">
-                            <!-- Généré dynamiquement par JavaScript pour la prévisualisation de la mosaïque -->
-                        </div>
+                        <!-- Grille Virtuelle Mosaïque -->
+                        <div id="visual-grid-overlay" class="absolute inset-0 grid grid-cols-4 grid-rows-4 pointer-events-none p-4 gap-4 hidden"></div>
                     </div>
                 </div>
 
-                <!-- Timeline du Lecteur -->
+                <!-- Timeline -->
                 <div class="bg-slate-950/60 border-t border-slate-800 px-4 py-3 flex items-center gap-4">
                     <button id="play-btn" class="text-slate-400 hover:text-white transition text-xs bg-slate-900 hover:bg-slate-800 border border-slate-800 w-8 h-8 rounded-lg flex items-center justify-center shadow"><i class="fa-solid fa-play"></i></button>
                     <input type="range" id="video-timeline" min="0" max="100" value="0" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded appearance-none cursor-pointer">
@@ -216,29 +212,27 @@
             </div>
         </section>
 
-        <!-- PANNEAU DROIT : File Manager & Export -->
+        <!-- PANNEAU DROIT : Pipelines & Exportation -->
         <section class="lg:col-span-12 xl:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between overflow-y-auto shadow-xl">
             <div class="flex flex-col gap-3 overflow-hidden">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. File Batch Pipeline</h2>
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. Pipeline de masse</h2>
                     <label class="text-[11px] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-3 py-2 rounded-xl cursor-pointer transition font-semibold shadow shadow-indigo-500/10">
                         <i class="fa-solid fa-plus mr-1"></i> Ajouter Médias
                         <input type="file" id="video-input" accept="video/mp4,video/webm" multiple class="hidden">
                     </label>
                 </div>
 
-                <div id="file-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[180px] max-h-[350px] lg:max-h-none">
-                    <!-- Fichiers injectés -->
-                </div>
+                <div id="file-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[180px] max-h-[350px] lg:max-h-none"></div>
             </div>
 
-            <!-- Traitement d'export final -->
+            <!-- Zone d'action dynamique -->
             <div class="pt-4 border-t border-slate-800 mt-4">
                 <button id="export-btn" disabled class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
-                    <i class="fa-solid fa-box-archive text-sm"></i> Lancer le rendu de masse (.ZIP)
+                    <i class="fa-solid fa-download text-sm"></i> <span id="export-btn-label">Lancer l'exportation (.MP4)</span>
                 </button>
                 
-                <!-- Feedback barre de chargement -->
+                <!-- Feedback barre de progression -->
                 <div id="progress-container" class="hidden mt-4 bg-slate-950 p-3 rounded-xl border border-slate-800">
                     <div class="flex justify-between text-[11px] mb-1.5">
                         <span class="text-slate-400 font-medium truncate max-w-[75%]" id="progress-status">Calcul...</span>
@@ -258,7 +252,7 @@
         // État Applicatif Global
         let videoFiles = [];
         let activeVideoIndex = null;
-        let watermarkType = 'image'; // 'image' ou 'text'
+        let watermarkType = 'image';
         let logoSrc = null;
         let isDragging = false;
         let startX, startY, startLeft, startTop;
@@ -273,11 +267,28 @@
         const watermarkOverlay = document.getElementById('watermark-overlay'), watermarkImg = document.getElementById('watermark-img'), watermarkTextRender = document.getElementById('watermark-text-render');
         const currentVideoTitle = document.getElementById('current-video-title'), videoResolution = document.getElementById('video-resolution');
         const playBtn = document.getElementById('play-btn'), videoTimeline = document.getElementById('video-timeline');
-        const exportBtn = document.getElementById('export-btn'), progressContainer = document.getElementById('progress-container'), progressStatus = document.getElementById('progress-status'), progressPct = document.getElementById('progress-pct'), progressBar = document.getElementById('progress-bar');
+        const exportBtn = document.getElementById('export-btn'), exportBtnLabel = document.getElementById('export-btn-label'), progressContainer = document.getElementById('progress-container'), progressStatus = document.getElementById('progress-status'), progressPct = document.getElementById('progress-pct'), progressBar = document.getElementById('progress-bar');
         
-        // Nouveaux boutons options
         const optGrid = document.getElementById('opt-grid'), optMute = document.getElementById('opt-mute'), optRename = document.getElementById('opt-rename');
         const visualGridOverlay = document.getElementById('visual-grid-overlay'), containerAnchors = document.getElementById('container-anchors');
+
+        // --- ENCODAGE DYNAMIQUE SÉCURISÉ MP4 CONTENEUR ---
+        function getSupportedMimeType() {
+            // Teste en priorité les formats de conteneurs MP4 modernes maintenant intégrés nativement
+            const targets = [
+                'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+                'video/mp4;codecs=avc1',
+                'video/mp4',
+                'video/webm;codecs=vp9', // Fallback de secours ultime
+                'video/webm'
+            ];
+            for (let type of targets) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return { mimeType: type, ext: type.includes('mp4') ? 'mp4' : 'webm' };
+                }
+            }
+            return { mimeType: '', ext: 'webm' };
+        }
 
         // --- GESTION TABS (LOGO VS TEXTE) ---
         window.switchType = function(type) {
@@ -300,7 +311,7 @@
             checkExportStatus();
         };
 
-        // --- WATCHERS INPUTS TEXTE & LOGO ---
+        // --- WATCHERS CONFIGURATION ---
         logoInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -322,7 +333,7 @@
         optGrid.addEventListener('change', (e) => {
             if (e.target.checked) {
                 visualGridOverlay.classList.remove('hidden');
-                watermarkOverlay.classList.add('hidden'); // Masquer le calque déplaçable unique
+                watermarkOverlay.classList.add('hidden');
                 containerAnchors.classList.add('opacity-30', 'pointer-events-none');
             } else {
                 visualGridOverlay.classList.add('hidden');
@@ -335,14 +346,11 @@
         logoScale.addEventListener('input', (e) => { scaleVal.innerText = e.target.value + '%'; updateWatermarkVisuals(); });
         logoOpacity.addEventListener('input', (e) => { opacityVal.innerText = e.target.value + '%'; updateWatermarkVisuals(); });
 
-        // --- SYNC INTERFACE VISUELLE ---
         function updateWatermarkVisuals() {
             if (activeVideoIndex === null) return;
-
             const scale = parseInt(logoScale.value);
             const opacity = parseInt(logoOpacity.value) / 100;
 
-            // Mise à jour de l'élément d'affichage individuel si hors-grille
             if (!optGrid.checked) {
                 watermarkOverlay.style.width = scale + '%';
                 watermarkOverlay.style.opacity = opacity;
@@ -353,12 +361,11 @@
                 } else {
                     watermarkTextRender.innerText = textInput.value;
                     watermarkTextRender.style.color = textColor.value;
-                    watermarkTextRender.style.fontSize = `${(scale / 2) + 8}px`; // Taille adaptative relative
+                    watermarkTextRender.style.fontSize = `${(scale / 2) + 8}px`;
                     watermarkTextRender.classList.remove('hidden');
                     watermarkImg.classList.add('hidden');
                 }
             } else {
-                // Mode Grille Mosaïque actif : Génération de l'aperçu visuel simulé
                 visualGridOverlay.innerHTML = '';
                 for (let i = 0; i < 16; i++) {
                     const item = document.createElement('div');
@@ -379,7 +386,7 @@
             }
         }
 
-        // --- SYNC COORDONNÉES ET GLISSER-DÉPOSER ---
+        // --- COORDONNÉES ET GLISSER-DÉPOSER ---
         watermarkOverlay.addEventListener('mousedown', (e) => {
             if (optGrid.checked) return;
             isDragging = true; startX = e.clientX; startY = e.clientY;
@@ -391,13 +398,10 @@
             if (!isDragging) return;
             const deltaX = e.clientX - startX, deltaY = e.clientY - startY;
             const pW = workspace.clientWidth, pH = workspace.clientHeight;
-            
             let leftPct = ((startLeft + deltaX) / pW) * 100;
             let topPct = ((startTop + deltaY) / pH) * 100;
-
             leftPct = Math.max(0, Math.min(leftPct, 100 - parseInt(logoScale.value)));
             topPct = Math.max(0, Math.min(topPct, 90));
-
             watermarkOverlay.style.left = leftPct + '%';
             watermarkOverlay.style.top = topPct + '%';
         });
@@ -417,32 +421,30 @@
             }
         };
 
-        // --- PIPELINE DE PRESETS (LOCAL STORAGE) ---
+        // --- PRESETS (LOCAL STORAGE) ---
         window.savePreset = function() {
             const data = {
                 type: watermarkType, text: textInput.value, color: textColor.value, size: textSize.value,
                 scale: logoScale.value, opacity: logoOpacity.value, grid: optGrid.checked, mute: optMute.checked, rename: optRename.value
             };
             localStorage.setItem('wm_studio_preset', JSON.stringify(data));
-            alert('Préréglage sauvegardé avec succès dans votre navigateur !');
+            alert('Configuration enregistrée !');
         };
 
         window.loadPreset = function() {
             const stored = localStorage.getItem('wm_studio_preset');
-            if(!stored) return alert("Aucun préréglage trouvé dans la mémoire.");
+            if(!stored) return alert("Aucun préréglage enregistré.");
             const data = JSON.parse(stored);
-            
             switchType(data.type);
             textInput.value = data.text; textColor.value = data.color; textSize.value = data.size;
             logoScale.value = data.scale; scaleVal.innerText = data.scale + '%';
             logoOpacity.value = data.opacity; opacityVal.innerText = data.opacity + '%';
             optGrid.checked = data.grid; optGrid.dispatchEvent(new Event('change'));
             optMute.checked = data.mute; optRename.value = data.rename;
-            
             updateWatermarkVisuals();
         };
 
-        // --- INGESTION VIDÉOS BATCH ---
+        // --- INGESTION MÉDIAS ---
         videoInput.addEventListener('change', (e) => { handleVideoFiles(e.target.files); });
         
         function handleVideoFiles(files) {
@@ -470,6 +472,13 @@
                 `;
                 fileList.appendChild(div);
             });
+            
+            // Met à jour dynamiquement l'intitulé du bouton en fonction du nombre de fichiers
+            if(videoFiles.length > 1) {
+                exportBtnLabel.innerText = "Exporter l'archive (.ZIP)";
+            } else {
+                exportBtnLabel.innerText = "Exporter la vidéo (.MP4)";
+            }
         }
 
         window.removeVideo = function(e, idx) {
@@ -502,7 +511,6 @@
             exportBtn.disabled = videoFiles.length === 0 || !hasWatermark;
         }
 
-        // Lecteur vidéo controls
         playBtn.addEventListener('click', () => {
             if (previewVideo.paused) { previewVideo.play(); playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; }
             else { previewVideo.pause(); playBtn.innerHTML = '<i class="fa-solid fa-play"></i>'; }
@@ -510,10 +518,12 @@
         previewVideo.addEventListener('timeupdate', () => { videoTimeline.value = (previewVideo.currentTime / previewVideo.duration) * 100 || 0; });
         videoTimeline.addEventListener('input', (e) => { previewVideo.currentTime = (e.target.value / 100) * previewVideo.duration; });
 
-        // --- ENGINE : TRAITEMENT ET EXPORTATION RENDU MULTIPLES ---
+        // --- MOTEUR DE RENDU ET LOGIQUE DE TÉLÉCHARGEMENT INTELLIGENTE ---
         exportBtn.addEventListener('click', async () => {
             exportBtn.disabled = true; progressContainer.classList.remove('hidden');
-            const zip = new JSZip();
+            
+            // Récupère les formats optimaux gérés par la machine courante (.mp4 natif de préférence)
+            const codecMeta = getSupportedMimeType();
             
             let loadedImg = null;
             if(watermarkType === 'image' && logoSrc) {
@@ -521,43 +531,69 @@
                 await new Promise(r => loadedImg.onload = r);
             }
 
-            // Récupération des données géométriques relatives du DOM pour l'injecter fidèlement dans le canvas
             const scaleFactor = parseInt(logoScale.value);
             const opacityFactor = parseInt(logoOpacity.value) / 100;
             const isGridMode = optGrid.checked;
             const isMutedMode = optMute.checked;
             const filePrefix = optRename.value || "";
 
-            // Sauvegarde de l'emplacement relatif (en %)
             const relLeft = parseFloat(watermarkOverlay.style.left) || 4;
             const relTop = parseFloat(watermarkOverlay.style.top) || 4;
 
-            for (let i = 0; i < videoFiles.length; i++) {
-                const item = videoFiles[i];
-                progressStatus.innerText = `Traitement : ${item.file.name}`;
+            // Cas 1 : UN UNIQUE FICHIER (Téléchargement Direct Sans Zip)
+            if (videoFiles.length === 1) {
+                const singleVideo = videoFiles[0];
+                progressStatus.innerText = `Calcul du rendu : ${singleVideo.file.name}`;
                 
-                const processBlob = await runCanvasEncoder(item, loadedImg, {
+                const finalBlob = await runCanvasEncoder(singleVideo, loadedImg, codecMeta.mimeType, {
                     type: watermarkType, text: textInput.value, color: textColor.value, size: parseInt(textSize.value),
                     scale: scaleFactor, opacity: opacityFactor, isGrid: isGridMode, isMuted: isMutedMode, x: relLeft, y: relTop
                 }, (p) => {
-                    let globalPct = Math.round(((i / videoFiles.length) * 100) + (p / videoFiles.length));
-                    progressPct.innerText = globalPct + '%'; progressBar.style.width = globalPct + '%';
+                    progressPct.innerText = Math.round(p) + '%'; progressBar.style.width = p + '%';
                 });
 
-                const cleanName = item.file.name.substring(0, item.file.name.lastIndexOf('.'));
-                zip.file(`${filePrefix}${cleanName}_studio.webm`, processBlob);
+                progressStatus.innerText = "Téléchargement de la vidéo...";
+                const cleanName = singleVideo.file.name.substring(0, singleVideo.file.name.lastIndexOf('.'));
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(finalBlob); 
+                link.download = `${filePrefix}${cleanName}_watermarked.${codecMeta.ext}`; 
+                link.click();
+
+            // Cas 2 : PLUSIEURS FICHIERS (Création Collective sous Archive ZIP)
+            } else {
+                const zip = new JSZip();
+
+                for (let i = 0; i < videoFiles.length; i++) {
+                    const item = videoFiles[i];
+                    progressStatus.innerText = `Traitement : ${item.file.name} (${i + 1}/${videoFiles.length})`;
+                    
+                    const processBlob = await runCanvasEncoder(item, loadedImg, codecMeta.mimeType, {
+                        type: watermarkType, text: textInput.value, color: textColor.value, size: parseInt(textSize.value),
+                        scale: scaleFactor, opacity: opacityFactor, isGrid: isGridMode, isMuted: isMutedMode, x: relLeft, y: relTop
+                    }, (p) => {
+                        let globalPct = Math.round(((i / videoFiles.length) * 100) + (p / videoFiles.length));
+                        progressPct.innerText = globalPct + '%'; progressBar.style.width = globalPct + '%';
+                    });
+
+                    const cleanName = item.file.name.substring(0, item.file.name.lastIndexOf('.'));
+                    zip.file(`${filePrefix}${cleanName}_watermarked.${codecMeta.ext}`, processBlob);
+                }
+
+                progressStatus.innerText = "Compilation de l'archive ZIP...";
+                const zipOutput = await zip.generateAsync({ type: "blob" });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(zipOutput); 
+                link.download = "pack_videos_studio.zip"; 
+                link.click();
             }
 
-            progressStatus.innerText = "Compression du pack ZIP...";
-            const zipOutput = await zip.generateAsync({ type: "blob" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(zipOutput); link.download = "pack_videos_filigranes.zip"; link.click();
-
-            progressStatus.innerText = "Traitement terminé !";
+            progressStatus.innerText = "Terminé !";
             setTimeout(() => { progressContainer.classList.add('hidden'); checkExportStatus(); }, 2500);
         });
 
-        function runCanvasEncoder(videoData, imgMark, conf, onFrameProgress) {
+        function runCanvasEncoder(videoData, imgMark, mimeTargetString, conf, onFrameProgress) {
             return new Promise((resolve) => {
                 const canvas = document.getElementById('render-canvas'), ctx = canvas.getContext('2d');
                 const procVid = document.createElement('video');
@@ -565,10 +601,8 @@
 
                 procVid.onloadedmetadata = () => {
                     canvas.width = procVid.videoWidth; canvas.height = procVid.videoHeight;
-                    
                     const stream = canvas.captureStream(30);
                     
-                    // Gestion Audio native évoluée du navigateur (Web Audio API Interception)
                     if (!conf.isMuted) {
                         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                         const source = audioCtx.createMediaElementSource(procVid);
@@ -579,35 +613,30 @@
                         }
                     }
 
-                    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+                    const recorder = new MediaRecorder(stream, { mimeType: mimeTargetString });
                     const chunks = [];
                     recorder.ondataavailable = e => chunks.push(e.data);
-                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
+                    recorder.onstop = () => resolve(new Blob(chunks, { type: mimeTargetString }));
 
                     procVid.play(); recorder.start();
 
                     function renderLoop() {
                         if (procVid.paused || procVid.ended) { recorder.stop(); return; }
-                        
-                        // Fond : la vidéo de base
                         ctx.drawImage(procVid, 0, 0, canvas.width, canvas.height);
                         ctx.save();
                         ctx.globalAlpha = conf.opacity;
 
-                        // Configuration dimensionnelle du filigrane proportionnelle
                         const wWidth = (conf.scale / 100) * canvas.width;
                         const hRatio = imgMark ? imgMark.height / imgMark.width : 0.4;
                         const wHeight = wWidth * hRatio;
 
                         if (conf.isGrid) {
-                            // Mode Grille Mosaïque complet (4x4)
                             const colWidth = canvas.width / 4;
                             const rowHeight = canvas.height / 4;
                             for (let r = 0; r < 4; r++) {
                                 for (let c = 0; c < 4; c++) {
                                     const cX = (c * colWidth) + (colWidth / 2);
                                     const cY = (r * rowHeight) + (rowHeight / 2);
-                                    
                                     if (conf.type === 'image' && imgMark) {
                                         ctx.drawImage(imgMark, cX - (wWidth / 2), cY - (wHeight / 2), wWidth, wHeight);
                                     } else if (conf.type === 'text') {
@@ -619,7 +648,6 @@
                                 }
                             }
                         } else {
-                            // Mode classique : Position Unique Libre
                             const targetX = (conf.x / 100) * canvas.width;
                             const targetY = (conf.y / 100) * canvas.height;
 
@@ -627,14 +655,12 @@
                                 ctx.drawImage(imgMark, targetX, targetY, wWidth, wHeight);
                             } else if (conf.type === 'text') {
                                 ctx.fillStyle = conf.color;
-                                // Calcul d'échelle de police dynamique basée sur la résolution de la vidéo
                                 const dynamicFontSize = (canvas.width * (conf.scale / 1500)) + 12;
                                 ctx.font = `bold ${dynamicFontSize}px sans-serif`;
                                 ctx.textBaseline = "top";
                                 ctx.fillText(conf.text, targetX, targetY);
                             }
                         }
-
                         ctx.restore();
                         onFrameProgress((procVid.currentTime / procVid.duration) * 100);
                         requestAnimationFrame(renderLoop);
@@ -644,7 +670,6 @@
             });
         }
 
-        // Drag & drop fichiers global
         window.addEventListener('dragover', (e) => e.preventDefault());
         window.addEventListener('drop', (e) => {
             e.preventDefault();
