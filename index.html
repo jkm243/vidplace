@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Watermarker Studio Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JSZip pour l'archive -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        .workspace-container { aspect-ratio: 16 / 9; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .grid-overlay {
+            background-image: radial-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur px-6 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2 rounded-xl text-white shadow-md shadow-indigo-500/20">
+                <i class="fa-solid fa-photo-film text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Batch Watermarker Studio
+                </h1>
+                <p class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Édition Professionnelle</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4 text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+            <span class="text-slate-400"><i class="fa-solid fa-server text-red-400 mr-1.5"></i> Aucun serveur requis</span>
+            <span class="text-slate-600">|</span>
+            <span class="text-slate-400"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1.5"></i> Confidentialité totale</span>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="max-w-[1800px] mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-85px)]">
+        
+        <!-- PANNEAU GAUCHE : Configuration & Ajustements -->
+        <section class="lg:col-span-4 xl:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-5 overflow-y-auto shadow-xl">
+            
+            <!-- Type de Filigrane (Tabs) -->
+            <div>
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">1. Type de Filigrane</h2>
+                <div class="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button id="tab-logo" onclick="switchType('image')" class="py-2 text-xs font-semibold rounded-lg transition bg-indigo-600 text-white shadow">
+                        <i class="fa-solid fa-file-image mr-1.5"></i> Logo PNG
+                    </button>
+                    <button id="tab-text" onclick="switchType('text')" class="py-2 text-xs font-semibold rounded-lg transition text-slate-400 hover:text-slate-200">
+                        <i class="fa-solid fa-font mr-1.5"></i> Texte personnalisé
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inputs Dynamiques (Logo ou Texte) -->
+            <div id="input-container-image" class="space-y-2">
+                <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-800 hover:border-indigo-500 rounded-xl p-4 cursor-pointer bg-slate-950/40 transition group">
+                    <i class="fa-solid fa-cloud-arrow-up text-xl text-slate-500 group-hover:text-indigo-400 mb-1.5"></i>
+                    <span class="text-xs text-slate-400 group-hover:text-slate-200 text-center truncate max-w-full" id="logo-status">Importer votre fichier PNG</span>
+                    <input type="file" id="logo-input" accept="image/png" class="hidden">
+                </label>
+            </div>
+
+            <div id="input-container-text" class="space-y-2 hidden">
+                <label class="text-[11px] text-slate-400 font-medium">Contenu du texte</label>
+                <input type="text" id="text-input" value="© Votre Marque" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                    <div>
+                        <label class="text-[11px] text-slate-400 id">Couleur</label>
+                        <input type="color" id="text-color" value="#ffffff" class="w-full bg-slate-950 border border-slate-800 rounded-lg h-8 p-1 cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-slate-400">Taille de police</label>
+                        <input type="number" id="text-size" value="16" min="10" max="100" class="w-full bg-slate-950 border border-slate-800 rounded-lg h-8 px-2 text-xs text-slate-200">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <!-- Options de Personnalisation Communes -->
+            <div class="space-y-4">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Réglages Visuels</h2>
+                
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Échelle (Taille)</span>
+                        <span id="scale-val" class="text-indigo-400 font-mono font-bold">20%</span>
+                    </div>
+                    <input type="range" id="logo-scale" min="5" max="70" value="20" class="w-full accent-indigo-500 bg-slate-950 h-1 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Opacité</span>
+                        <span id="opacity-val" class="text-indigo-400 font-mono font-bold">100%</span>
+                    </div>
+                    <input type="range" id="logo-opacity" min="10" max="100" value="100" class="w-full accent-indigo-500 bg-slate-950 h-1 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- Ancrage Rapide (Désactivé si mode grille coché) -->
+                <div id="container-anchors">
+                    <span class="text-[11px] text-slate-400 block mb-1.5">Ancrage Rapide Manuel</span>
+                    <div class="grid grid-cols-3 gap-1.5 text-[10px]">
+                        <button onclick="setAnchor('top-left')" class="bg-slate-950 border border-slate-800 hover:border-slate-700 py-1.5 rounded transition">Haut-G</button>
+                        <button onclick="setAnchor('top-center')" class="bg-slate-950 border border-slate-800 hover:border-slate-700 py-1.5 rounded transition">Haut-C</button>
+                        <button onclick="setAnchor('top-right')" class="bg-slate-950 border border-slate-800 hover:border-slate-700 py-1.5 rounded transition">Haut-D</button>
+                        <button onclick="setAnchor('middle-center')" class="bg-slate-950 border border-slate-800 hover:border-slate-700 py-1.5 rounded transition">Centre</button>
+                        <button onclick="setAnchor('bottom-left')" class="bg-slate-950 border border-slate-800 hover:border-slate-700 py-1.5 rounded transition">Bas-G</button>
+                        <button onclick="setAnchor('bottom-right')" class="bg-slate-950 border border-slate-800 hover:border-slate-700 py-1.5 rounded transition">Bas-D</button>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <!-- OPTIONS AVANCÉES NOUVELLES -->
+            <div class="space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. Options Avancées</h2>
+                
+                <!-- Mode Mosaïque / Protection Grille -->
+                <label class="flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-slate-200">Mode Grille (Mosaïque)</span>
+                        <span class="text-[10px] text-slate-500">Répéter pour protéger la vidéo</span>
+                    </div>
+                    <input type="checkbox" id="opt-grid" class="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-800 accent-indigo-500">
+                </label>
+
+                <!-- Supprimer l'audio -->
+                <label class="flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-slate-200">Couper le son (Mute)</span>
+                        <span class="text-[10px] text-slate-500">Retirer les pistes audio</span>
+                    </div>
+                    <input type="checkbox" id="opt-mute" class="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-800 accent-indigo-500">
+                </label>
+
+                <!-- Renommage groupé -->
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium block mb-1">Préfixe de renommage de l'archive</label>
+                    <input type="text" id="opt-rename" value="proteger_" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+                </div>
+            </div>
+
+            <!-- Systèmes de Configuration sauvegardés (Presets) -->
+            <div class="mt-auto pt-2 grid grid-cols-2 gap-2">
+                <button onclick="savePreset()" class="bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 py-2 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-floppy-disk text-slate-400"></i> Sauver Preset
+                </button>
+                <button onclick="loadPreset()" class="bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 py-2 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-folder-open text-slate-400"></i> Charger Preset
+                </button>
+            </div>
+        </section>
+
+        <!-- PANNEAU CENTRAL : Visualisation en direct -->
+        <section class="lg:col-span-8 xl:col-span-6 flex flex-col gap-4">
+            <div class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative shadow-xl">
+                
+                <div class="bg-slate-950/60 border-b border-slate-800 px-4 py-3 flex justify-between items-center text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-slate-300 font-medium truncate" id="current-video-title">Aucune vidéo active</span>
+                    </div>
+                    <span class="text-slate-500 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800/60" id="video-resolution">-- x --</span>
+                </div>
+
+                <!-- Zone Interactive Principale -->
+                <div class="flex-1 flex items-center justify-center p-4 bg-slate-950/60 relative grid-overlay">
+                    
+                    <!-- État d'attente initial -->
+                    <div id="empty-state" class="text-center max-w-sm flex flex-col items-center z-10 p-6 bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur-sm shadow-xl">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center mb-3 text-white shadow-lg shadow-indigo-500/20">
+                            <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-200 mb-1">Importez vos fichiers pour commencer</p>
+                        <p class="text-[11px] text-slate-500">Glissez-déposez n'importe où vos vidéos (MP4, WebM)</p>
+                    </div>
+
+                    <!-- Simulateur/Éditeur de scène -->
+                    <div id="workspace" class="workspace-container w-full max-w-3xl bg-black rounded-xl shadow-2xl relative overflow-hidden hidden select-none border border-slate-800">
+                        <video id="preview-video" class="w-full h-full object-contain pointer-events-none" muted loop></video>
+                        
+                        <!-- Le composant Filigrane UNIQUE déplaçable (Sauf si Grid activé) -->
+                        <div id="watermark-overlay" class="absolute cursor-move border border-dashed border-indigo-500/40 hover:border-indigo-400 p-1 group" style="top: 10%; left: 10%; width: 20%;">
+                            <!-- Rendu image -->
+                            <img id="watermark-img" src="" class="w-full h-full object-contain pointer-events-none hidden">
+                            <!-- Rendu Texte -->
+                            <span id="watermark-text-render" class="w-full block whitespace-nowrap font-bold pointer-events-none select-none tracking-wide"></span>
+                        </div>
+
+                        <!-- Visualisation Grille Virtuelle Indépendante (Active uniquement si option cochée) -->
+                        <div id="visual-grid-overlay" class="absolute inset-0 grid grid-cols-4 grid-rows-4 pointer-events-none p-4 gap-4 hidden">
+                            <!-- Généré dynamiquement par JavaScript pour la prévisualisation de la mosaïque -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline du Lecteur -->
+                <div class="bg-slate-950/60 border-t border-slate-800 px-4 py-3 flex items-center gap-4">
+                    <button id="play-btn" class="text-slate-400 hover:text-white transition text-xs bg-slate-900 hover:bg-slate-800 border border-slate-800 w-8 h-8 rounded-lg flex items-center justify-center shadow"><i class="fa-solid fa-play"></i></button>
+                    <input type="range" id="video-timeline" min="0" max="100" value="0" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded appearance-none cursor-pointer">
+                </div>
+            </div>
+        </section>
+
+        <!-- PANNEAU DROIT : File Manager & Export -->
+        <section class="lg:col-span-12 xl:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between overflow-y-auto shadow-xl">
+            <div class="flex flex-col gap-3 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. File Batch Pipeline</h2>
+                    <label class="text-[11px] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-3 py-2 rounded-xl cursor-pointer transition font-semibold shadow shadow-indigo-500/10">
+                        <i class="fa-solid fa-plus mr-1"></i> Ajouter Médias
+                        <input type="file" id="video-input" accept="video/mp4,video/webm" multiple class="hidden">
+                    </label>
+                </div>
+
+                <div id="file-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[180px] max-h-[350px] lg:max-h-none">
+                    <!-- Fichiers injectés -->
+                </div>
+            </div>
+
+            <!-- Traitement d'export final -->
+            <div class="pt-4 border-t border-slate-800 mt-4">
+                <button id="export-btn" disabled class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                    <i class="fa-solid fa-box-archive text-sm"></i> Lancer le rendu de masse (.ZIP)
+                </button>
+                
+                <!-- Feedback barre de chargement -->
+                <div id="progress-container" class="hidden mt-4 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div class="flex justify-between text-[11px] mb-1.5">
+                        <span class="text-slate-400 font-medium truncate max-w-[75%]" id="progress-status">Calcul...</span>
+                        <span class="text-indigo-400 font-mono font-bold" id="progress-pct">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden p-[2px] border border-slate-800">
+                        <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-full w-0 rounded-full transition-all duration-200"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <canvas id="render-canvas" class="hidden"></canvas>
+
+    <script>
+        // État Applicatif Global
+        let videoFiles = [];
+        let activeVideoIndex = null;
+        let watermarkType = 'image'; // 'image' ou 'text'
+        let logoSrc = null;
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+
+        // Éléments UI DOM
+        const logoInput = document.getElementById('logo-input'), logoStatus = document.getElementById('logo-status');
+        const textInput = document.getElementById('text-input'), textColor = document.getElementById('text-color'), textSize = document.getElementById('text-size');
+        const logoScale = document.getElementById('logo-scale'), logoOpacity = document.getElementById('logo-opacity');
+        const scaleVal = document.getElementById('scale-val'), opacityVal = document.getElementById('opacity-val');
+        const videoInput = document.getElementById('video-input'), fileList = document.getElementById('file-list');
+        const emptyState = document.getElementById('empty-state'), workspace = document.getElementById('workspace'), previewVideo = document.getElementById('preview-video');
+        const watermarkOverlay = document.getElementById('watermark-overlay'), watermarkImg = document.getElementById('watermark-img'), watermarkTextRender = document.getElementById('watermark-text-render');
+        const currentVideoTitle = document.getElementById('current-video-title'), videoResolution = document.getElementById('video-resolution');
+        const playBtn = document.getElementById('play-btn'), videoTimeline = document.getElementById('video-timeline');
+        const exportBtn = document.getElementById('export-btn'), progressContainer = document.getElementById('progress-container'), progressStatus = document.getElementById('progress-status'), progressPct = document.getElementById('progress-pct'), progressBar = document.getElementById('progress-bar');
+        
+        // Nouveaux boutons options
+        const optGrid = document.getElementById('opt-grid'), optMute = document.getElementById('opt-mute'), optRename = document.getElementById('opt-rename');
+        const visualGridOverlay = document.getElementById('visual-grid-overlay'), containerAnchors = document.getElementById('container-anchors');
+
+        // --- GESTION TABS (LOGO VS TEXTE) ---
+        window.switchType = function(type) {
+            watermarkType = type;
+            const tabLogo = document.getElementById('tab-logo'), tabText = document.getElementById('tab-text');
+            const inputImg = document.getElementById('input-container-image'), inputTxt = document.getElementById('input-container-text');
+            
+            if (type === 'image') {
+                tabLogo.className = "py-2 text-xs font-semibold rounded-lg transition bg-indigo-600 text-white shadow";
+                tabText.className = "py-2 text-xs font-semibold rounded-lg transition text-slate-400 hover:text-slate-200";
+                inputImg.classList.remove('hidden'); inputTxt.classList.add('hidden');
+                watermarkImg.classList.remove('hidden'); watermarkTextRender.classList.add('hidden');
+            } else {
+                tabText.className = "py-2 text-xs font-semibold rounded-lg transition bg-indigo-600 text-white shadow";
+                tabLogo.className = "py-2 text-xs font-semibold rounded-lg transition text-slate-400 hover:text-slate-200";
+                inputTxt.classList.remove('hidden'); inputImg.classList.add('hidden');
+                watermarkTextRender.classList.remove('hidden'); watermarkImg.classList.add('hidden');
+            }
+            updateWatermarkVisuals();
+            checkExportStatus();
+        };
+
+        // --- WATCHERS INPUTS TEXTE & LOGO ---
+        logoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    logoSrc = event.target.result;
+                    watermarkImg.src = logoSrc;
+                    logoStatus.innerText = file.name;
+                    updateWatermarkVisuals();
+                    checkExportStatus();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        textInput.addEventListener('input', updateWatermarkVisuals);
+        textColor.addEventListener('input', updateWatermarkVisuals);
+        textSize.addEventListener('input', updateWatermarkVisuals);
+        optGrid.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                visualGridOverlay.classList.remove('hidden');
+                watermarkOverlay.classList.add('hidden'); // Masquer le calque déplaçable unique
+                containerAnchors.classList.add('opacity-30', 'pointer-events-none');
+            } else {
+                visualGridOverlay.classList.add('hidden');
+                watermarkOverlay.classList.remove('hidden');
+                containerAnchors.classList.remove('opacity-30', 'pointer-events-none');
+            }
+            updateWatermarkVisuals();
+        });
+
+        logoScale.addEventListener('input', (e) => { scaleVal.innerText = e.target.value + '%'; updateWatermarkVisuals(); });
+        logoOpacity.addEventListener('input', (e) => { opacityVal.innerText = e.target.value + '%'; updateWatermarkVisuals(); });
+
+        // --- SYNC INTERFACE VISUELLE ---
+        function updateWatermarkVisuals() {
+            if (activeVideoIndex === null) return;
+
+            const scale = parseInt(logoScale.value);
+            const opacity = parseInt(logoOpacity.value) / 100;
+
+            // Mise à jour de l'élément d'affichage individuel si hors-grille
+            if (!optGrid.checked) {
+                watermarkOverlay.style.width = scale + '%';
+                watermarkOverlay.style.opacity = opacity;
+                
+                if(watermarkType === 'image') {
+                    watermarkImg.style.display = logoSrc ? 'block' : 'none';
+                    watermarkTextRender.classList.add('hidden');
+                } else {
+                    watermarkTextRender.innerText = textInput.value;
+                    watermarkTextRender.style.color = textColor.value;
+                    watermarkTextRender.style.fontSize = `${(scale / 2) + 8}px`; // Taille adaptative relative
+                    watermarkTextRender.classList.remove('hidden');
+                    watermarkImg.classList.add('hidden');
+                }
+            } else {
+                // Mode Grille Mosaïque actif : Génération de l'aperçu visuel simulé
+                visualGridOverlay.innerHTML = '';
+                for (let i = 0; i < 16; i++) {
+                    const item = document.createElement('div');
+                    item.className = "flex items-center justify-center overflow-hidden transition-all";
+                    item.style.opacity = opacity;
+                    if(watermarkType === 'image' && logoSrc) {
+                        const img = document.createElement('img');
+                        img.src = logoSrc; img.className = "w-2/3 object-contain";
+                        item.appendChild(img);
+                    } else if (watermarkType === 'text') {
+                        const span = document.createElement('span');
+                        span.innerText = textInput.value; span.style.color = textColor.value;
+                        span.className = "text-[10px] font-bold tracking-tight transform -rotate-12";
+                        item.appendChild(span);
+                    }
+                    visualGridOverlay.appendChild(item);
+                }
+            }
+        }
+
+        // --- SYNC COORDONNÉES ET GLISSER-DÉPOSER ---
+        watermarkOverlay.addEventListener('mousedown', (e) => {
+            if (optGrid.checked) return;
+            isDragging = true; startX = e.clientX; startY = e.clientY;
+            startLeft = watermarkOverlay.offsetLeft; startTop = watermarkOverlay.offsetTop;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - startX, deltaY = e.clientY - startY;
+            const pW = workspace.clientWidth, pH = workspace.clientHeight;
+            
+            let leftPct = ((startLeft + deltaX) / pW) * 100;
+            let topPct = ((startTop + deltaY) / pH) * 100;
+
+            leftPct = Math.max(0, Math.min(leftPct, 100 - parseInt(logoScale.value)));
+            topPct = Math.max(0, Math.min(topPct, 90));
+
+            watermarkOverlay.style.left = leftPct + '%';
+            watermarkOverlay.style.top = topPct + '%';
+        });
+
+        document.addEventListener('mouseup', () => { isDragging = false; });
+
+        window.setAnchor = function(pos) {
+            if(optGrid.checked) return;
+            const scale = parseInt(logoScale.value);
+            switch(pos) {
+                case 'top-left': watermarkOverlay.style.left = '4%'; watermarkOverlay.style.top = '4%'; break;
+                case 'top-center': watermarkOverlay.style.left = `${50 - (scale/2)}%`; watermarkOverlay.style.top = '4%'; break;
+                case 'top-right': watermarkOverlay.style.left = `${96 - scale}%`; watermarkOverlay.style.top = '4%'; break;
+                case 'middle-center': watermarkOverlay.style.left = `${50 - (scale/2)}%`; watermarkOverlay.style.top = '45%'; break;
+                case 'bottom-left': watermarkOverlay.style.left = '4%'; watermarkOverlay.style.top = '85%'; break;
+                case 'bottom-right': watermarkOverlay.style.left = `${96 - scale}%`; watermarkOverlay.style.top = '85%'; break;
+            }
+        };
+
+        // --- PIPELINE DE PRESETS (LOCAL STORAGE) ---
+        window.savePreset = function() {
+            const data = {
+                type: watermarkType, text: textInput.value, color: textColor.value, size: textSize.value,
+                scale: logoScale.value, opacity: logoOpacity.value, grid: optGrid.checked, mute: optMute.checked, rename: optRename.value
+            };
+            localStorage.setItem('wm_studio_preset', JSON.stringify(data));
+            alert('Préréglage sauvegardé avec succès dans votre navigateur !');
+        };
+
+        window.loadPreset = function() {
+            const stored = localStorage.getItem('wm_studio_preset');
+            if(!stored) return alert("Aucun préréglage trouvé dans la mémoire.");
+            const data = JSON.parse(stored);
+            
+            switchType(data.type);
+            textInput.value = data.text; textColor.value = data.color; textSize.value = data.size;
+            logoScale.value = data.scale; scaleVal.innerText = data.scale + '%';
+            logoOpacity.value = data.opacity; opacityVal.innerText = data.opacity + '%';
+            optGrid.checked = data.grid; optGrid.dispatchEvent(new Event('change'));
+            optMute.checked = data.mute; optRename.value = data.rename;
+            
+            updateWatermarkVisuals();
+        };
+
+        // --- INGESTION VIDÉOS BATCH ---
+        videoInput.addEventListener('change', (e) => { handleVideoFiles(e.target.files); });
+        
+        function handleVideoFiles(files) {
+            for (let file of files) {
+                videoFiles.push({ file: file, url: URL.createObjectURL(file) });
+            }
+            renderFileList();
+            if (activeVideoIndex === null && videoFiles.length > 0) selectVideo(0);
+            checkExportStatus();
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            videoFiles.forEach((vid, index) => {
+                const isActive = index === activeVideoIndex;
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition text-xs ${isActive ? 'bg-indigo-600/10 border-indigo-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'}`;
+                div.onclick = () => selectVideo(index);
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden flex-1">
+                        <i class="fa-solid fa-film text-slate-500"></i>
+                        <span class="truncate font-medium">${vid.file.name}</span>
+                    </div>
+                    <button onclick="removeVideo(event, ${index})" class="text-slate-500 hover:text-red-400 px-1 transition"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                fileList.appendChild(div);
+            });
+        }
+
+        window.removeVideo = function(e, idx) {
+            e.stopPropagation(); URL.revokeObjectURL(videoFiles[idx].url); videoFiles.splice(idx, 1);
+            if (activeVideoIndex === idx) activeVideoIndex = videoFiles.length > 0 ? 0 : null;
+            else if (activeVideoIndex > idx) activeVideoIndex--;
+            renderFileList();
+            if (activeVideoIndex !== null) selectVideo(activeVideoIndex); else resetWorkspace();
+            checkExportStatus();
+        };
+
+        function selectVideo(idx) {
+            activeVideoIndex = idx; const video = videoFiles[idx];
+            emptyState.classList.add('hidden'); workspace.classList.remove('hidden');
+            previewVideo.src = video.url; currentVideoTitle.innerText = video.file.name;
+            previewVideo.onloadedmetadata = () => {
+                videoResolution.innerText = `${previewVideo.videoWidth} x ${previewVideo.videoHeight}`;
+                updateWatermarkVisuals();
+            };
+            renderFileList();
+        }
+
+        function resetWorkspace() {
+            emptyState.classList.remove('hidden'); workspace.classList.add('hidden');
+            previewVideo.src = ''; currentVideoTitle.innerText = "Aucune vidéo active"; videoResolution.innerText = "-- x --";
+        }
+
+        function checkExportStatus() {
+            const hasWatermark = (watermarkType === 'image' && logoSrc !== null) || (watermarkType === 'text' && textInput.value.trim() !== "");
+            exportBtn.disabled = videoFiles.length === 0 || !hasWatermark;
+        }
+
+        // Lecteur vidéo controls
+        playBtn.addEventListener('click', () => {
+            if (previewVideo.paused) { previewVideo.play(); playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; }
+            else { previewVideo.pause(); playBtn.innerHTML = '<i class="fa-solid fa-play"></i>'; }
+        });
+        previewVideo.addEventListener('timeupdate', () => { videoTimeline.value = (previewVideo.currentTime / previewVideo.duration) * 100 || 0; });
+        videoTimeline.addEventListener('input', (e) => { previewVideo.currentTime = (e.target.value / 100) * previewVideo.duration; });
+
+        // --- ENGINE : TRAITEMENT ET EXPORTATION RENDU MULTIPLES ---
+        exportBtn.addEventListener('click', async () => {
+            exportBtn.disabled = true; progressContainer.classList.remove('hidden');
+            const zip = new JSZip();
+            
+            let loadedImg = null;
+            if(watermarkType === 'image' && logoSrc) {
+                loadedImg = new Image(); loadedImg.src = logoSrc;
+                await new Promise(r => loadedImg.onload = r);
+            }
+
+            // Récupération des données géométriques relatives du DOM pour l'injecter fidèlement dans le canvas
+            const scaleFactor = parseInt(logoScale.value);
+            const opacityFactor = parseInt(logoOpacity.value) / 100;
+            const isGridMode = optGrid.checked;
+            const isMutedMode = optMute.checked;
+            const filePrefix = optRename.value || "";
+
+            // Sauvegarde de l'emplacement relatif (en %)
+            const relLeft = parseFloat(watermarkOverlay.style.left) || 4;
+            const relTop = parseFloat(watermarkOverlay.style.top) || 4;
+
+            for (let i = 0; i < videoFiles.length; i++) {
+                const item = videoFiles[i];
+                progressStatus.innerText = `Traitement : ${item.file.name}`;
+                
+                const processBlob = await runCanvasEncoder(item, loadedImg, {
+                    type: watermarkType, text: textInput.value, color: textColor.value, size: parseInt(textSize.value),
+                    scale: scaleFactor, opacity: opacityFactor, isGrid: isGridMode, isMuted: isMutedMode, x: relLeft, y: relTop
+                }, (p) => {
+                    let globalPct = Math.round(((i / videoFiles.length) * 100) + (p / videoFiles.length));
+                    progressPct.innerText = globalPct + '%'; progressBar.style.width = globalPct + '%';
+                });
+
+                const cleanName = item.file.name.substring(0, item.file.name.lastIndexOf('.'));
+                zip.file(`${filePrefix}${cleanName}_studio.webm`, processBlob);
+            }
+
+            progressStatus.innerText = "Compression du pack ZIP...";
+            const zipOutput = await zip.generateAsync({ type: "blob" });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(zipOutput); link.download = "pack_videos_filigranes.zip"; link.click();
+
+            progressStatus.innerText = "Traitement terminé !";
+            setTimeout(() => { progressContainer.classList.add('hidden'); checkExportStatus(); }, 2500);
+        });
+
+        function runCanvasEncoder(videoData, imgMark, conf, onFrameProgress) {
+            return new Promise((resolve) => {
+                const canvas = document.getElementById('render-canvas'), ctx = canvas.getContext('2d');
+                const procVid = document.createElement('video');
+                procVid.src = videoData.url; procVid.muted = true; procVid.playsInline = true;
+
+                procVid.onloadedmetadata = () => {
+                    canvas.width = procVid.videoWidth; canvas.height = procVid.videoHeight;
+                    
+                    const stream = canvas.captureStream(30);
+                    
+                    // Gestion Audio native évoluée du navigateur (Web Audio API Interception)
+                    if (!conf.isMuted) {
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const source = audioCtx.createMediaElementSource(procVid);
+                        const dest = audioCtx.createMediaStreamDestination();
+                        source.connect(dest);
+                        if(dest.stream.getAudioTracks().length > 0) {
+                            stream.addTrack(dest.stream.getAudioTracks()[0]);
+                        }
+                    }
+
+                    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+                    const chunks = [];
+                    recorder.ondataavailable = e => chunks.push(e.data);
+                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
+
+                    procVid.play(); recorder.start();
+
+                    function renderLoop() {
+                        if (procVid.paused || procVid.ended) { recorder.stop(); return; }
+                        
+                        // Fond : la vidéo de base
+                        ctx.drawImage(procVid, 0, 0, canvas.width, canvas.height);
+                        ctx.save();
+                        ctx.globalAlpha = conf.opacity;
+
+                        // Configuration dimensionnelle du filigrane proportionnelle
+                        const wWidth = (conf.scale / 100) * canvas.width;
+                        const hRatio = imgMark ? imgMark.height / imgMark.width : 0.4;
+                        const wHeight = wWidth * hRatio;
+
+                        if (conf.isGrid) {
+                            // Mode Grille Mosaïque complet (4x4)
+                            const colWidth = canvas.width / 4;
+                            const rowHeight = canvas.height / 4;
+                            for (let r = 0; r < 4; r++) {
+                                for (let c = 0; c < 4; c++) {
+                                    const cX = (c * colWidth) + (colWidth / 2);
+                                    const cY = (r * rowHeight) + (rowHeight / 2);
+                                    
+                                    if (conf.type === 'image' && imgMark) {
+                                        ctx.drawImage(imgMark, cX - (wWidth / 2), cY - (wHeight / 2), wWidth, wHeight);
+                                    } else if (conf.type === 'text') {
+                                        ctx.fillStyle = conf.color;
+                                        ctx.font = `bold ${canvas.width * 0.025}px sans-serif`;
+                                        ctx.textAlign = "center";
+                                        ctx.fillText(conf.text, cX, cY);
+                                    }
+                                }
+                            }
+                        } else {
+                            // Mode classique : Position Unique Libre
+                            const targetX = (conf.x / 100) * canvas.width;
+                            const targetY = (conf.y / 100) * canvas.height;
+
+                            if (conf.type === 'image' && imgMark) {
+                                ctx.drawImage(imgMark, targetX, targetY, wWidth, wHeight);
+                            } else if (conf.type === 'text') {
+                                ctx.fillStyle = conf.color;
+                                // Calcul d'échelle de police dynamique basée sur la résolution de la vidéo
+                                const dynamicFontSize = (canvas.width * (conf.scale / 1500)) + 12;
+                                ctx.font = `bold ${dynamicFontSize}px sans-serif`;
+                                ctx.textBaseline = "top";
+                                ctx.fillText(conf.text, targetX, targetY);
+                            }
+                        }
+
+                        ctx.restore();
+                        onFrameProgress((procVid.currentTime / procVid.duration) * 100);
+                        requestAnimationFrame(renderLoop);
+                    }
+                    procVid.addEventListener('play', renderLoop);
+                };
+            });
+        }
+
+        // Drag & drop fichiers global
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+            if(droppedFiles.length > 0) handleVideoFiles(droppedFiles);
+        });
+    </script>
+</body>
+</html>
